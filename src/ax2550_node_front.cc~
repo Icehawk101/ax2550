@@ -137,8 +137,8 @@ void queryEncoders()
     ax2550::Encoders encoder_msg;
     
     encoder_msg.time_delta = delta_time;
-    encoder_msg.right_wheel = -encoder1;
-    encoder_msg.left_wheel = encoder2;
+    encoder_msg.right_wheel = encoder1;
+    encoder_msg.left_wheel = -encoder2;
     
     encoder_pub.publish(encoder_msg);
 }

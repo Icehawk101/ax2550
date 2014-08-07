@@ -66,11 +66,11 @@ int main(int argc, char** argv)
         double v_w3 = (wheel3_new * dist_per_tick)/dt_rear;
         double v_w4 = (wheel4_new * dist_per_tick)/dt_front;
 
-	double avg_dt = (dt_front - dt_rear)/2;
+	double avg_dt = (dt_front + dt_rear)/2.0;
 
-	if(avg_dt < 0)
+	if(avg_dt == 0)
 	{
-	    avg_dt = avg_dt * -1;
+	    avg_dt = dt_front;
 	}
 	    
         vx = (wheel_radius/4)*(v_w1+v_w2+v_w3+v_w4);
@@ -82,9 +82,9 @@ int main(int argc, char** argv)
         double delta_y = vy * avg_dt;
         double delta_th = vth * avg_dt;
 
-        x += delta_x;
-        y += delta_y;
-        th += delta_th;
+        x = x + delta_x;
+        y = y + delta_y;
+        th = th + delta_th;
 
         //since all odometry is 6DOF we'll need a quaternion created from yaw
         geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);

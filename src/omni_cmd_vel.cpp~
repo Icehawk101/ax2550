@@ -39,10 +39,10 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
     double rear_B_rpm = W2 * (60.0 / (M_PI*wheel_diameter));
     
     // Convert rpm to relative (pg 81)
-    double front_A_count = 20 * front_A_rpm * 1250 * 11 / 58593.75; //(rpm * PPR * Time Base+1)/58593.75(from Operating Manual)
-    double front_B_count = 20 * front_B_rpm * 1250 * 11 / 58593.75;
-    double rear_A_count = 20 * rear_A_rpm * 1250 * 11 / 58593.75;
-    double rear_B_count = 20 * rear_B_rpm * 1250 * 11 / 58593.75;
+    double front_A_rel = front_A_rpm * 1250 * 11 / 58593.75; //(rpm * PPR * Time Base+1)/58593.75(from Operating Manual)
+    double front_B_rel = front_B_rpm * 1250 * 11 / 58593.75;
+    double rear_A_rel = rear_A_rpm * 1250 * 11 / 58593.75;
+    double rear_B_rel = rear_B_rpm * 1250 * 11 / 58593.75;
 
     // Bounds check
     if(front_A_rel > REL_MAX)
@@ -119,15 +119,15 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
 
     // publish motor speeds
     geometry_msgs::Twist front_cmd_vel;
-    front_cmd_vel.linear.x = front_A_rel; // *-1
-    front_cmd_vel.linear.y = front_B_rel;
+    front_cmd_vel.linear.x = front_A_rel * -1; // *-1
+    front_cmd_vel.linear.y = front_B_rel * -1;
     front_cmd_vel.linear.z = 0.0;
     front_cmd_vel.angular.x = 0.0;
     front_cmd_vel.angular.y = 0.0;
     front_cmd_vel.angular.z = 0.0;
 	
     geometry_msgs::Twist rear_cmd_vel;
-    rear_cmd_vel.linear.x = rear_A_rel; // *-1
+    rear_cmd_vel.linear.x = rear_A_rel;
     rear_cmd_vel.linear.y = rear_B_rel;
     rear_cmd_vel.linear.z = 0.0;
     rear_cmd_vel.angular.x = 0.0;

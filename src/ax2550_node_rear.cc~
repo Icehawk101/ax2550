@@ -137,21 +137,22 @@ void queryEncoders()
     ax2550::Encoders encoder_msg;
     
     encoder_msg.time_delta = delta_time;
-    encoder_msg.right_wheel = -encoder1;
-    encoder_msg.left_wheel = encoder2;
+    encoder_msg.right_wheel = encoder1;
+    encoder_msg.left_wheel = -encoder2;
     
     encoder_pub.publish(encoder_msg);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv) 
+{
     // Node setup
-    ros::init(argc, argv, "ax2550_node_front");
+    ros::init(argc, argv, "ax2550_node_rear");
     ros::NodeHandle n;
     prev_time = ros::Time::now();
     
     // Serial port parameter
     std::string port;
-    n.param("serial_port", port, std::string("/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IKWU-if00-port0"));
+    n.param("serial_port", port, std::string("/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IMQF-if00-port0")); 
     
     // Wheel diameter parameter
     n.param("wheel_diameter", wheel_diameter, 0.3048);
@@ -162,7 +163,7 @@ int main(int argc, char **argv) {
     n.param("wheel_base_length", wheel_base_length, 0.9144);
     
     // Odom Frame id parameter
-    n.param("odom_frame_id", odom_frame_id, std::string("front_odom"));
+    n.param("odom_frame_id", odom_frame_id, std::string("rear_odom"));
 
     // Load up some covariances from parameters
     n.param("rotation_covariance",rot_cov, 1.0);
@@ -173,10 +174,10 @@ int main(int argc, char **argv) {
     ros::Rate encoder_rate(encoder_poll_rate);
     
     // Encoder Publisher
-    encoder_pub = n.advertise<ax2550::Encoders>("front_encoders", 5);
+    encoder_pub = n.advertise<ax2550::Encoders>("rear_encoders", 5);
     
     // cmd_vel Subscriber
-    ros::Subscriber sub = n.subscribe("front_cmd_vel", 1, cmd_velCallback);
+    ros::Subscriber sub = n.subscribe("rear_cmd_vel", 1, cmd_velCallback);
     
     // Spinner
     ros::AsyncSpinner spinner(1);
