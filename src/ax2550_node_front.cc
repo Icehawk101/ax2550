@@ -137,8 +137,8 @@ void queryEncoders()
     ax2550::Encoders encoder_msg;
     
     encoder_msg.time_delta = delta_time;
-    encoder_msg.right_wheel = encoder1;
-    encoder_msg.left_wheel = -encoder2;
+    encoder_msg.right_wheel = -encoder1;
+    encoder_msg.left_wheel = encoder2;
     
     encoder_pub.publish(encoder_msg);
 }
@@ -162,14 +162,14 @@ int main(int argc, char **argv) {
     n.param("wheel_base_length", wheel_base_length, 0.9144);
     
     // Odom Frame id parameter
-    n.param("odom_frame_id", odom_frame_id, std::string("odom"));
+    n.param("odom_frame_id", odom_frame_id, std::string("front_odom"));
 
     // Load up some covariances from parameters
     n.param("rotation_covariance",rot_cov, 1.0);
     n.param("position_covariance",pos_cov, 1.0);
     
     // Setup Encoder polling
-    n.param("encoder_poll_rate", encoder_poll_rate, 25.0);
+    n.param("encoder_poll_rate", encoder_poll_rate, 1.0); //default 25.0
     ros::Rate encoder_rate(encoder_poll_rate);
     
     // Encoder Publisher
