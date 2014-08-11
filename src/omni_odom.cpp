@@ -38,89 +38,6 @@ void reCallBack(const ax2550::Encoders::ConstPtr& msg)
     wheel3_new = msg->left_wheel;
     dt_rear = msg->time_delta;
     computeOdom();
-<<<<<<< HEAD
-}
-
-void computeOdom()
-{
-
-    double avg_dt = (dt_front + dt_rear)/2.0;
-
-    if(avg_dt == 0)
-    {
-        avg_dt = dt_front;
-    }
-
-    ros::Time current_time = ros::Time::now();
-
-    double dist_per_tick = wheel_circumference / encoder_resolution;
-
-    //compute the velocities
-    double v_w1 = (wheel1_new * dist_per_tick)/dt_front;
-    double v_w2 = (wheel2_new * dist_per_tick)/dt_rear;
-    double v_w3 = (wheel3_new * dist_per_tick)/dt_rear;
-    double v_w4 = (wheel4_new * dist_per_tick)/dt_front;
-
-    vx = (wheel_radius/4)*(v_w1+v_w2+v_w3+v_w4);
-    vy = (wheel_radius/4)*(-v_w1+v_w2-v_w3+v_w4);
-    vth = (wheel_radius/(4*k))*(-v_w1-v_w2+v_w3+v_w4);
-
-    //compute odometry in a typical way given the velocities of the robot
-    double delta_x = vx * avg_dt;
-    double delta_y = vy * avg_dt;
-    double delta_th = vth * avg_dt;
-
-    x = x + delta_x;
-    y = y + delta_y;
-    th = th + delta_th;
-
-    //since all odometry is 6DOF we'll need a quaternion created from yaw
-    geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
-
-    //first, we'll publish the transform over tf
-    geometry_msgs::TransformStamped odom_trans;
-    odom_trans.header.stamp = current_time;
-    odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_footprint";
-    odom_trans.transform.translation.x = x;
-    odom_trans.transform.translation.y = y;
-    odom_trans.transform.translation.z = 0.0;
-    odom_trans.transform.rotation = odom_quat;
-
-    tf::TransformBroadcaster odom_broadcaster;
-    //send the transform
-    odom_broadcaster.sendTransform(odom_trans);
-
-    //next, we'll publish the odometry message over ROS
-    nav_msgs::Odometry odom;
-    odom.header.stamp = current_time;
-    odom.header.frame_id = "odom";
-
-    //set the position
-    odom.pose.pose.position.x = x;
-    odom.pose.pose.position.y = y;
-    odom.pose.pose.position.z = 0.0;
-    odom.pose.pose.orientation = odom_quat;
-
-    //set the covariance
-    odom.pose.covariance[0] = 0.2;
-    odom.pose.covariance[7] = 0.2;
-    odom.pose.covariance[14] = 1e100;
-    odom.pose.covariance[21] = 1e100;
-    odom.pose.covariance[28] = 1e100;
-    odom.pose.covariance[35] = 0.2;
-
-    //set the velocity
-    odom.child_frame_id = "base_footprint";
-    odom.twist.twist.linear.x = vx;
-    odom.twist.twist.linear.y = vy;
-    odom.twist.twist.angular.z = vth;
-
-    //publish the message
-    odom_pub.publish(odom);
-
-=======
->>>>>>> 2fc94f743a1494dcbc3bb0a790a072551b85f8ce
 }
 
 void computeOdom()
@@ -202,6 +119,7 @@ void computeOdom()
     odom_pub.publish(odom);
 
 }
+
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "omni_odom");
