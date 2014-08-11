@@ -2,6 +2,7 @@
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
 #include <ax2550/Encoders.h>
+#include <tf/transform_datatypes.h>
 
 int wheel1_new, wheel2_new, wheel3_new, wheel4_new;
 double dt_front, dt_rear;
@@ -19,10 +20,10 @@ const double wheel_circumference = 0.785;
 const double k = 0.44; //the sum of the distance between the wheel's x-coord and the origin, and the y-coord and the origin
 const double encoder_resolution = 1250*4*20;
 
-
 ros::Publisher odom_pub;
 ros::Subscriber fr_enc;
 ros::Subscriber rr_enc;
+tf::TransformBroadcaster *odom_broadcaster;
 void computeOdom();
 
 void feCallBack(const ax2550::Encoders::ConstPtr& msg)
@@ -86,9 +87,9 @@ void computeOdom()
     odom_trans.transform.translation.z = 0.0;
     odom_trans.transform.rotation = odom_quat;
 
-    tf::TransformBroadcaster odom_broadcaster;
+    odom_broadcaster = new tf::TransformBroadcaster();
     //send the transform
-    odom_broadcaster.sendTransform(odom_trans);
+    odom_broadcaster->sendTransform(odom_trans);
 
     //next, we'll publish the odometry message over ROS
     nav_msgs::Odometry odom;
