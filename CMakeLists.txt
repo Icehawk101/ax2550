@@ -58,6 +58,11 @@ add_executable(omni_odom src/omni_odom.cpp)
 target_link_libraries(omni_odom ax2550 ${catkin_LIBRARIES})
 add_dependencies(omni_odom ax2550_generate_messages_cpp ${catkin_EXPORTED_LIBRARIES})
 
+## ax2550 Omnidirectional Odometry ROS Node take 2
+add_executable(omni_odom_take_2 src/omni_odom_take_2.cpp)
+target_link_libraries(omni_odom_take_2 ax2550 ${catkin_LIBRARIES})
+add_dependencies(omni_odom_take_2 ax2550_generate_messages_cpp ${catkin_EXPORTED_LIBRARIES})
+
 install(TARGETS ax2550 ax2550_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

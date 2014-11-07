@@ -250,104 +250,105 @@ void queryEncoders()
     //     odom_broadcaster->sendTransform(odom_trans);
 }
 
-int main(int argc, char **argv) {
-    // Node setup
-    ros::init(argc, argv, "ax2550_node");
-    ros::NodeHandle n;
-    prev_time = ros::Time::now();
+int main(int argc, char **argv) 
+{
+  // Node setup
+  ros::init(argc, argv, "ax2550_node");
+  ros::NodeHandle n;
+  prev_time = ros::Time::now();
     
-    // Serial port parameter
-    std::string port;
-    n.param("serial_port", port, std::string("/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IKWU-if00-port0")); ///dev/motor_controller
+  // Serial port parameter
+  std::string port;
+  n.param("serial_port", port, std::string("/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IKWU-if00-port0")); ///dev/motor_controller
     
-    // Wheel diameter parameter
-    n.param("wheel_diameter", wheel_diameter, 0.3048);
+  // Wheel diameter parameter
+  n.param("wheel_diameter", wheel_diameter, 0.3048);
     
-    wheel_circumference = wheel_diameter * M_PI;
+  wheel_circumference = wheel_diameter * M_PI;
     
-    // Wheel base length
-    n.param("wheel_base_length", wheel_base_length, 0.9144);
-    
-    // Odom Frame id parameter
-    n.param("odom_frame_id", odom_frame_id, std::string("odom"));
+  // Wheel base length
+  n.param("wheel_base_length", wheel_base_length, 0.9144);
+  
+  // Odom Frame id parameter
+  n.param("odom_frame_id", odom_frame_id, std::string("odom"));
 
-    // Load up some covariances from parameters
-    n.param("rotation_covariance",rot_cov, 1.0);
-    n.param("position_covariance",pos_cov, 1.0);
+  // Load up some covariances from parameters
+  n.param("rotation_covariance",rot_cov, 1.0);
+  n.param("position_covariance",pos_cov, 1.0);
     
-    // Setup Encoder polling
-    n.param("encoder_poll_rate", encoder_poll_rate, 25.0);
-    ros::Rate encoder_rate(encoder_poll_rate);
+  // Setup Encoder polling
+  n.param("encoder_poll_rate", encoder_poll_rate, 25.0);
+  ros::Rate encoder_rate(encoder_poll_rate);
+  
+  // Odometry Publisher
+  odom_pub = n.advertise<nav_msgs::Odometry>("odom", 5);
+  
+  // Encoder Publisher
+  encoder_pub = n.advertise<ax2550::StampedEncoders>("encoders", 5);
     
-    // Odometry Publisher
-    odom_pub = n.advertise<nav_msgs::Odometry>("odom", 5);
+  // TF Broadcaster
+  odom_broadcaster = new tf::TransformBroadcaster;
     
-    // Encoder Publisher
-    encoder_pub = n.advertise<ax2550::StampedEncoders>("encoders", 5);
-    
-    // TF Broadcaster
-    odom_broadcaster = new tf::TransformBroadcaster;
-    
-    // cmd_vel Subscriber
-    ros::Subscriber sub = n.subscribe("cmd_vel", 1, cmd_velCallback);
-    
-    // Spinner
-    ros::AsyncSpinner spinner(1);
-    spinner.start();
+  // cmd_vel Subscriber
+  ros::Subscriber sub = n.subscribe("cmd_vel", 1, cmd_velCallback);
+  
+  // Spinner
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
 
-    while(ros::ok()) 
+  while(ros::ok()) 
+  {
+    ROS_INFO("AX2550 connecting to port %s", port.c_str());
+    try 
+	  {
+      mc = new AX2550();
+      mc->warn = warnMsgCallback;
+      mc->info = infoMsgCallback;
+      mc->debug = debugMsgCallback;
+      mc->connect(port);
+    } 
+	  catch(std::exception &e) 
+	  {
+      ROS_ERROR("Failed to connect to the AX2550: %s", e.what());
+      if (mc != NULL) 
+	    {
+      	mc->disconnect();
+      }
+    }
+    int count = 0;
+    while(mc != NULL && mc->isConnected() && ros::ok()) 
     {
-        ROS_INFO("AX2550 connecting to port %s", port.c_str());
-        try 
-	{
-            mc = new AX2550();
-            mc->warn = warnMsgCallback;
-            mc->info = infoMsgCallback;
-            mc->debug = debugMsgCallback;
-            mc->connect(port);
-        } 
-	catch(std::exception &e) 
-	{
-            ROS_ERROR("Failed to connect to the AX2550: %s", e.what());
-            if (mc != NULL) 
+      queryEncoders();
+      if (count == 1) 
 	    {
-            	mc->disconnect();
-            }
-        }
-        int count = 0;
-        while(mc != NULL && mc->isConnected() && ros::ok()) 
-	{
-            queryEncoders();
-            if (count == 1) 
-	    {
-                controlLoop();
-                count = 0;
-            } 
+        controlLoop();
+        count = 0;
+      } 
 	    else 
 	    {
-                count += 1;
-            }
+        count += 1;
+      }
 	    encoder_rate.sleep();
-        }
-        if (mc != NULL) 
-	{
-        	delete mc;
-        }
-        mc = NULL;
-        if(!ros::ok())
-            break;
-        ROS_INFO("Will try to reconnect to the AX2550 in 5 seconds.");
-        for (int i = 0; i < 100; ++i) 
-	{
-        	ros::Duration(5.0/100.0).sleep();
-        	if (!ros::ok())
-        	break;
-        }
-        target_speed = 0.0;
-        target_direction = 0.0;
     }
+    if (mc != NULL) 
+    {
+    	delete mc;
+    }
+    mc = NULL;
+    if(!ros::ok())
+      break;
+    ROS_INFO("Will try to reconnect to the AX2550 in 5 seconds.");
+    for (int i = 0; i < 100; ++i) 
+	  {
+    	ros::Duration(5.0/100.0).sleep();
+    	if (!ros::ok())
+      	break;
+    }
+    target_speed = 0.0;
+    target_direction = 0.0;
+  }
 
-    spinner.stop();
+  spinner.stop();
     
-    return 0;
+  return 0;
 }
