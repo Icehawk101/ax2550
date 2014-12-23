@@ -1,13 +1,8 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
-
 #include "ax2550/StampedEncoders.h"
-
-
-
 #include <string>
 #include <cmath>
-
 #include "ax2550/ax2550.h"
 
 using namespace ax2550;
@@ -38,13 +33,13 @@ ros::Time prev_time;
 
 void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg) 
 {
-    time_last = ros::Time::now();
-    if(mc == NULL || !mc->isConnected())
-        return;
+  time_last = ros::Time::now();
+  if(mc == NULL || !mc->isConnected())
+    return;
     
-    //set the targets
-    target_speed_right = msg->linear.x;
-    target_speed_left = msg->linear.y;
+  //set the targets
+  target_speed_right = msg->linear.x;
+  target_speed_left = msg->linear.y;
 }
 
 void controlLoop() 
@@ -52,9 +47,9 @@ void controlLoop()
   // ROS_INFO("Relative move commands: %f %f", target_speed, target_direction);
   try 
   {
-	//SAFETY TIME OUT
-	//if a command is not received for 2 seconds the motors time out
-	double time_past = (ros::Time::now() - time_last).toSec();
+	  //SAFETY TIME OUT
+	  //if a command is not received for 2 seconds the motors time out
+	  double time_past = (ros::Time::now() - time_last).toSec();
 	  if(time_past > timeout_sec)
 	  {
 		  mc->move(0,0);

@@ -40,7 +40,7 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
   time_last = ros::Time::now();
   if(mc == NULL || !mc->isConnected())
-      return;
+    return;
   
   //set the targets
   target_speed_right = msg->linear.x;

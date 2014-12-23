@@ -78,8 +78,8 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
     rear_B_rel = rear_B_rel * rel;
   }
 	
-if(rear_A_rel > REL_MAX)
-{
+  if(rear_A_rel > REL_MAX)
+  {
     double rel = REL_MAX / rear_A_rel;
     front_A_rel = front_A_rel * rel;
 	  front_B_rel = front_B_rel * rel;
