@@ -1,13 +1,8 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
-
 #include "ax2550/StampedEncoders.h"
-
-
-
 #include <string>
 #include <cmath>
-
 #include "ax2550/ax2550.h"
 
 using namespace ax2550;
@@ -103,7 +98,7 @@ void queryEncoders()
 {
   // Make sure we are connected
   if(!ros::ok() || mc == NULL || !mc->isConnected())
-      return;
+    return;
     
   long encoder1, encoder2;
   ros::Time now = ros::Time::now();

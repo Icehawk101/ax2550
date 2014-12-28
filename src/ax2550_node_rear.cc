@@ -219,8 +219,8 @@ int main(int argc, char **argv)
   	  delete mc;
     }
     mc = NULL;
-   if(!ros::ok())
-     break;
+    if(!ros::ok())
+      break;
     ROS_INFO("Will try to reconnect to the AX2550 in 5 seconds.");
     for (int i = 0; i < 100; ++i) 
 	  {

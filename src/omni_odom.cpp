@@ -3,25 +3,19 @@
 #include <nav_msgs/Odometry.h>
 #include <ax2550/StampedEncoders.h>
 #include <tf/transform_datatypes.h>
+#include <ros/console.h>
+#include <geometry_msgs/Quaternion.h>
 
 int wheel1_new = 0;
 int wheel2_new = 0;
 int wheel3_new = 0;
 int wheel4_new = 0;
-double dt_front = 0;
-double dt_rear = 0;
-
-double x = 0.0;
-double y = 0.0;
-double th = 0.0;
-
-double vx = 0.0;
-double vy = 0.0;
-double vth = 0.0;
+double dt_front = 0.000001;
+double dt_rear = 0.000001;
 
 const double wheel_radius = 0.125;
 const double wheel_circumference = 0.785;
-const double encoder_resolution = 1250 * 4 * 20;
+const double encoder_resolution = 1250*4*20;
 const double k = 0.47 + 0.55; //the sum of the distance between the wheel's x-coord and the origin, and the y-coord and the origin
 const double dist_per_tick = wheel_circumference / encoder_resolution;
 
@@ -48,31 +42,38 @@ int main(int argc, char** argv)
   ros::Subscriber fr_enc = n.subscribe("/omnimaxbot/front/encoders", 100, feCallBack);
   ros::Subscriber rr_enc = n.subscribe("/omnimaxbot/rear/encoders", 100, reCallBack);
   tf::TransformBroadcaster odom_broadcaster;
+  
+  double x = 0.0;
+  double y = 0.0;
+  double th = 0.0;
 
+  double vx = 0.0;
+  double vy = 0.0;
+  double vth = 0.0;
+  
   ros::Time current_time = ros::Time::now();
-  //ros::Time last_time = ros::Time::now();
-
-  ros::Rate r(1.0);
-  while (n.ok())
+  
+  ros::Rate r(25.0);
+  while(n.ok())
   {
     current_time = ros::Time::now();
+    
+    double avg_dt = (dt_front + dt_rear)/2.0;
 
-    double avg_dt = (dt_front + dt_rear) / 2.0;
-
-    if (avg_dt == 0)
+    if(avg_dt == 0)
     {
-      avg_dt = dt_front;
+        avg_dt = dt_front;
     }
 
     //compute the velocities
-    double v_w1 = (wheel1_new * dist_per_tick) / dt_front;
-    double v_w2 = (wheel2_new * dist_per_tick) / dt_rear;
-    double v_w3 = (wheel3_new * dist_per_tick) / dt_rear;
-    double v_w4 = (wheel4_new * dist_per_tick) / dt_front;
+    double v_w1 = (wheel1_new * dist_per_tick)/dt_front;
+    double v_w2 = (wheel2_new * dist_per_tick)/dt_rear;
+    double v_w3 = (wheel3_new * dist_per_tick)/dt_rear;
+    double v_w4 = (wheel4_new * dist_per_tick)/dt_front;
 
-    vx = (wheel_radius / 4)*(v_w1 + v_w2 + v_w3 + v_w4);
-    vy = (wheel_radius / 4)*(-v_w1 + v_w2 - v_w3 + v_w4);
-    vth = (wheel_radius / (4 * k))*(-v_w1 - v_w2 + v_w3 + v_w4);
+    vx = (wheel_radius/4)*(v_w1+v_w2+v_w3+v_w4);
+    vy = (wheel_radius/4)*(-v_w1+v_w2-v_w3+v_w4);
+    vth = (wheel_radius/(4*k))*(-v_w1-v_w2+v_w3+v_w4);
 
     //compute odometry in a typical way given the velocities of the robot
     double delta_x = vx * avg_dt;
@@ -126,7 +127,7 @@ int main(int argc, char** argv)
 
     //publish the message
     odom_pub.publish(odom);
-
+    
     ros::spinOnce();
     r.sleep();
   }
