@@ -6,6 +6,7 @@
 #include <ros/console.h>
 #include <geometry_msgs/Quaternion.h>
 
+//initialize global variables
 int wheel1_new = 0;
 int wheel2_new = 0;
 int wheel3_new = 0;
@@ -13,12 +14,14 @@ int wheel4_new = 0;
 double dt_front = 0.000001;
 double dt_rear = 0.000001;
 
+//initialize constants
 const double wheel_radius = 0.125;
 const double wheel_circumference = 0.785;
 const double encoder_resolution = 1250*4*20;
 const double k = 0.47 + 0.55; //the sum of the distance between the wheel's x-coord and the origin, and the y-coord and the origin
 const double dist_per_tick = wheel_circumference / encoder_resolution;
 
+//function to save front encoder data to global variables
 void feCallBack(const ax2550::StampedEncoders::ConstPtr& msg)
 {
   wheel1_new = msg->encoders.left_wheel;
@@ -26,6 +29,7 @@ void feCallBack(const ax2550::StampedEncoders::ConstPtr& msg)
   dt_front = msg->encoders.time_delta;
 }
 
+//function to save rear encoder data to global variables
 void reCallBack(const ax2550::StampedEncoders::ConstPtr& msg)
 {
   wheel2_new = msg->encoders.left_wheel;
@@ -35,59 +39,66 @@ void reCallBack(const ax2550::StampedEncoders::ConstPtr& msg)
 
 int main(int argc, char** argv)
 {
+  //initialize ROS
   ros::init(argc, argv, "omni_odom");
-
   ros::NodeHandle n;
   ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("omni_odom", 60);
   ros::Subscriber fr_enc = n.subscribe("/omnimaxbot/front/encoders", 100, feCallBack);
   ros::Subscriber rr_enc = n.subscribe("/omnimaxbot/rear/encoders", 100, reCallBack);
   tf::TransformBroadcaster odom_broadcaster;
   
+  //initialize displacement variables
   double x = 0.0;
   double y = 0.0;
   double th = 0.0;
 
+  //initialize velocity variables
   double vx = 0.0;
   double vy = 0.0;
   double vth = 0.0;
   
   ros::Time current_time = ros::Time::now();
   
+  //checks the loop at a rate of 25Hz
   ros::Rate r(25.0);
   while(n.ok())
   {
-    current_time = ros::Time::now();
+    current_time = ros::Time::now(); //saves the current system time
     
-    double avg_dt = (dt_front + dt_rear)/2.0;
+    //calculates the average time between encoder counts for the front and rear encoders
+    double avg_dt = (dt_front + dt_rear)/2.0; 
 
+    //skips the rest of the loop if for some reason no time has passed between encoder counts
     if(avg_dt == 0)
     {
-        avg_dt = dt_front;
+        continue;
     }
 
-    //compute the velocities
+    //compute the velocities of each wheel
     double v_w1 = (wheel1_new * dist_per_tick)/dt_front;
     double v_w2 = (wheel2_new * dist_per_tick)/dt_rear;
     double v_w3 = (wheel3_new * dist_per_tick)/dt_rear;
     double v_w4 = (wheel4_new * dist_per_tick)/dt_front;
 
+    //compute the overall velocity of the robot
     vx = (wheel_radius/4)*(v_w1+v_w2+v_w3+v_w4);
     vy = (wheel_radius/4)*(-v_w1+v_w2-v_w3+v_w4);
     vth = (wheel_radius/(4*k))*(-v_w1-v_w2+v_w3+v_w4);
 
-    //compute odometry in a typical way given the velocities of the robot
+    //compute the change in displacement
     double delta_x = vx * avg_dt;
     double delta_y = vy * avg_dt;
     double delta_th = vth * avg_dt;
 
+    //compute the overall displacement
     x = x + delta_x;
     y = y + delta_y;
     th = th + delta_th;
 
-    //since all odometry is 6DOF we'll need a quaternion created from yaw
+    //create quaternion created from yaw
     geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
 
-    //first, we'll publish the transform over tf
+    //publish the transform
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = current_time;
     odom_trans.header.frame_id = "odom";
@@ -96,11 +107,9 @@ int main(int argc, char** argv)
     odom_trans.transform.translation.y = y;
     odom_trans.transform.translation.z = 0.0;
     odom_trans.transform.rotation = odom_quat;
-
-    //send the transform
     odom_broadcaster.sendTransform(odom_trans);
 
-    //next, we'll publish the odometry message over ROS
+    //publish the odometry
     nav_msgs::Odometry odom;
     odom.header.stamp = current_time;
     odom.header.frame_id = "odom";

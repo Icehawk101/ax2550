@@ -3,6 +3,7 @@
 
 using namespace std;
 
+//initialize publishers
 ros::Publisher front_cmd_vel_pub;
 ros::Publisher rear_cmd_vel_pub;
 
@@ -14,9 +15,11 @@ double wheel_radius = 0.125;
 
 static double REL_MAX = 96.0;
 
+//function to calculate the wheel velocities
 void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg) 
 {
-  const double k = 0.47 + 0.55; //the sum of the distance between the wheel's x-coord and the origin, and the y-coord and the origin 
+  //the sum of the distance between the wheel's x-coordinate and the x-axis, and the y-coordinate and the y-axis
+  const double k = 0.47 + 0.55;  
 	
   // Copy the velocities (m/s)
   double Vx = msg->linear.x;
@@ -35,8 +38,9 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
   double rear_A_rpm = W3 * (60.0 / (2 * M_PI * wheel_radius));
   double front_A_rpm = W4 * (60.0 / (2 * M_PI * wheel_radius));
     
-  // Convert rpm to relative (pg 81)
-  double front_A_rel = front_A_rpm * 1250 * 11 / 58593.75; //(rpm * PPR * Time Base+1)/58593.75(from Operating Manual)
+  // Convert from rpm to relative 
+  // rel = (rpm * PPR * Time Base+1)/58593.75(from pg 81 of the Operating Manual)
+  double front_A_rel = front_A_rpm * 1250 * 11 / 58593.75;
   double front_B_rel = front_B_rpm * 1250 * 11 / 58593.75;
   double rear_A_rel = rear_A_rpm * 1250 * 11 / 58593.75;
   double rear_B_rel = rear_B_rpm * 1250 * 11 / 58593.75;
