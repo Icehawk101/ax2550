@@ -25,15 +25,15 @@ const double dist_per_tick = wheel_circumference / encoder_resolution;
 void feCallBack(const ax2550::StampedEncoders::ConstPtr& msg)
 {
   wheel1_new = msg->encoders.left_wheel;
-  wheel4_new = msg->encoders.right_wheel;
+  wheel2_new = msg->encoders.right_wheel;
   dt_front = msg->encoders.time_delta;
 }
 
 //function to save rear encoder data to global variables
 void reCallBack(const ax2550::StampedEncoders::ConstPtr& msg)
 {
-  wheel2_new = msg->encoders.left_wheel;
-  wheel3_new = msg->encoders.right_wheel;
+  wheel3_new = msg->encoders.left_wheel;
+  wheel4_new = msg->encoders.right_wheel;
   dt_rear = msg->encoders.time_delta;
 }
 
@@ -82,8 +82,8 @@ int main(int argc, char** argv)
 
     //compute the overall velocity of the robot
     vx = (wheel_radius/4)*(v_w1+v_w2+v_w3+v_w4);
-    vy = (wheel_radius/4)*(-v_w1+v_w2-v_w3+v_w4);
-    vth = (wheel_radius/(4*k))*(-v_w1-v_w2+v_w3+v_w4);
+    vy = (wheel_radius/4)*(v_w1-v_w2-v_w3+v_w4);
+    vth = (wheel_radius/(4*k))*(-v_w1+v_w2-v_w3+v_w4);
 
     //compute the change in displacement
     double delta_x = vx * avg_dt;

@@ -160,51 +160,65 @@ string_format(const string &fmt, ...) {
 }
 
 void
-AX2550::move (double speed, double direction) {
-  if(!this->connected_) {
+AX2550::move (double right_speed, double left_speed) 
+{
+  if(!this->connected_) 
+  {
     AX2550_THROW(CommandFailedException, "must be connected to move");
   }
   // Grab the lock
   boost::mutex::scoped_lock lock(this->mc_mutex);
   string serial_buffer;
-  unsigned char speed_hex, direction_hex;
+  unsigned char right_speed_hex, left_speed_hex;
   string fail_why;
-  // Create the speed command
-  speed_hex = (unsigned char) (fabs(speed));
-  if(speed < 0) {
-    serial_buffer = string_format("!a%.2X", speed_hex);
-  } else {
-    serial_buffer = string_format("!A%.2X", speed_hex);
+  // Create the speed command for the right motor
+  right_speed_hex = (unsigned char) (fabs(right_speed));
+  if(right_speed < 0) 
+  {
+    serial_buffer = string_format("!a%.2X", right_speed_hex);
+  } 
+  else 
+  {
+    serial_buffer = string_format("!A%.2X", right_speed_hex);
   }
   // Issue the speed command
-  if (!this->issueCommand(serial_buffer, fail_why)) {
+  if (!this->issueCommand(serial_buffer, fail_why)) 
+  {
     AX2550_THROW(CommandFailedException, fail_why.c_str());
   }
   // Listen for an ack or nak
   this->ack_nak_filt_->clear();
   string result = this->ack_nak_filt_->wait(100);
-  if (result != "+") {
-    if (result == "-") {
+  if (result != "+") 
+  {
+    if (result == "-") 
+    {
       AX2550_THROW(CommandFailedException, "nak received, command failed");
     }
     AX2550_THROW(CommandFailedException, "did not receive an ack or nak");
   }
-  // Create the direction command
-  direction_hex = (unsigned char) (fabs(direction));
-  if(direction < 0) {
-    serial_buffer = string_format("!b%.2X", direction_hex);
-  } else {
-    serial_buffer = string_format("!B%.2X", direction_hex);
+  // Create the speed command for the left motor
+  left_speed_hex = (unsigned char) (fabs(left_speed));
+  if(left_speed < 0) 
+  {
+    serial_buffer = string_format("!b%.2X", left_speed_hex);
+  } 
+  else 
+  {
+    serial_buffer = string_format("!B%.2X", left_speed_hex);
   }
-  // Issue the direction command
-  if (!this->issueCommand(string(serial_buffer), fail_why)) {
+  // Issue the speed command
+  if (!this->issueCommand(string(serial_buffer), fail_why)) 
+  {
     AX2550_THROW(CommandFailedException, fail_why.c_str());
   }
   // Listen for an ack or nak
   this->ack_nak_filt_->clear();
   result = this->ack_nak_filt_->wait(100);
-  if (result != "+") {
-    if (result == "-") {
+  if (result != "+") 
+  {
+    if (result == "-") 
+    {
       AX2550_THROW(CommandFailedException, "nak received, command failed");
     }
     AX2550_THROW(CommandFailedException, "did not receive an ack or nak");
@@ -213,12 +227,13 @@ AX2550::move (double speed, double direction) {
 
 void
 AX2550::queryEncoders (long &encoder1, long &encoder2, bool relative) {
-  if(!this->connected_) {
-    AX2550_THROW(CommandFailedException, "must be connected to query "
-                                         "the encoders");
+  if(!this->connected_) 
+  {
+    AX2550_THROW(CommandFailedException, "must be connected to query the encoders");
   }
   // Check the count in the encoder filter, should be 0
-  if (this->encoders_filt_->count()) {
+  if (this->encoders_filt_->count()) 
+  {
     stringstream ss;
     ss << "There were " << this->encoders_filt_->count()
        << " orphaned encoder messages in the filter...";
