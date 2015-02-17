@@ -13,7 +13,7 @@ double wheel_radius = 0.125;
 // Limiting speed to 1 km/hr
 // That is 21.25 rpm, roughly 96 input
 
-static double REL_MAX = 96.0;
+static double REL_MAX = 35.0;
 
 //function to calculate the wheel velocities
 void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg) 
@@ -26,17 +26,17 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
   double Vy = msg->linear.y;
   double Wv = msg->angular.z;
 	
-  // Calculate individual wheel velocities (wheel 1 is the front left corner, going counterclockwise)(m/s)
-  double W1 = Vx - Vy + Wv * -k; 
-  double W2 = Vx + Vy + Wv * -k; 
-  double W3 = Vx - Vy + Wv * k; 
+  // Calculate individual wheel velocities (m/s)
+  double W1 = Vx + Vy + Wv * -k; 
+  double W2 = Vx - Vy + Wv * k;
+  double W3 = Vx - Vy + Wv * -k; 
   double W4 = Vx + Vy + Wv * k; 
 	
   // Convert from mps to rpm
   double front_B_rpm = W1 * (60.0 / (2 * M_PI * wheel_radius));
-  double rear_B_rpm = W2 * (60.0 / (2 * M_PI * wheel_radius));
-  double rear_A_rpm = W3 * (60.0 / (2 * M_PI * wheel_radius));
-  double front_A_rpm = W4 * (60.0 / (2 * M_PI * wheel_radius));
+  double front_A_rpm = W2 * (60.0 / (2 * M_PI * wheel_radius));
+  double rear_B_rpm = W3 * (60.0 / (2 * M_PI * wheel_radius));
+  double rear_A_rpm = W4 * (60.0 / (2 * M_PI * wheel_radius));
     
   // Convert from rpm to relative 
   // rel = (rpm * PPR * Time Base+1)/58593.75(from pg 81 of the Operating Manual)
@@ -46,76 +46,40 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
   double rear_B_rel = rear_B_rpm * 1250 * 11 / 58593.75;
 
   // Bounds check
-  if(front_A_rel > REL_MAX)
+  if(front_A_rel > REL_MAX || front_A_rel < -REL_MAX)
   {
-    double rel = REL_MAX / front_A_rel;
-    front_A_rel = REL_MAX;
-	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = rear_A_rel * rel;
-	  rear_B_rel = rear_B_rel * rel;
-  }
-	
-  if(front_A_rel < -1*REL_MAX)
-  {
-	  double rel = REL_MAX / front_A_rel;
-	  front_A_rel = -1 * REL_MAX;
-	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = rear_A_rel * rel;
-	  rear_B_rel = rear_B_rel * rel;
-  }
-	
-  if(front_B_rel > REL_MAX)
-  {
-    double rel = REL_MAX / front_B_rel;
+    double rel = abs(REL_MAX / front_A_rel);
     front_A_rel = front_A_rel * rel;
-    front_B_rel = REL_MAX;
+	  front_B_rel = front_B_rel * rel;
+	  rear_A_rel = rear_A_rel * rel;
+	  rear_B_rel = rear_B_rel * rel;
+  }
+	
+  if(front_B_rel > REL_MAX || front_B_rel < -REL_MAX)
+  {
+    double rel = abs(REL_MAX / front_B_rel);
+    front_A_rel = front_A_rel * rel;
+    front_B_rel = front_B_rel * rel;
     rear_A_rel = rear_A_rel * rel;
 	  rear_B_rel = rear_B_rel * rel;
   }
 	
-  if(front_B_rel < -1*REL_MAX)
+  if(rear_A_rel > REL_MAX || rear_A_rel < -REL_MAX)
   {
-	  double rel = REL_MAX / front_B_rel;
-    front_A_rel = front_A_rel * rel;
-    front_B_rel = -1 * REL_MAX;
-    rear_A_rel = rear_A_rel * rel;
-    rear_B_rel = rear_B_rel * rel;
-  }
-	
-  if(rear_A_rel > REL_MAX)
-  {
-    double rel = REL_MAX / rear_A_rel;
+    double rel = abs(REL_MAX / rear_A_rel);
     front_A_rel = front_A_rel * rel;
 	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = REL_MAX;
+	  rear_A_rel = rear_A_rel * rel;
 	  rear_B_rel = rear_B_rel * rel;
   }
 	
-  if(rear_A_rel < -1*REL_MAX)
+  if(rear_B_rel > REL_MAX || rear_B_rel < -REL_MAX)
   {
-	  double rel = REL_MAX / rear_A_rel;
+	  double rel = abs(REL_MAX / rear_B_rel);
 	  front_A_rel = front_A_rel * rel;
 	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = -1 * REL_MAX;
+	  rear_A_rel = rear_A_rel * rel;
 	  rear_B_rel = rear_B_rel * rel;
-  }
-	
-  if(rear_B_rel > REL_MAX)
-  {
-	  double rel = REL_MAX / rear_B_rel;
-	  front_A_rel = front_A_rel * rel;
-	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = rear_A_rel * rel;
-	  rear_B_rel = REL_MAX;
-  }
-	
-  if(rear_B_rel < -1*REL_MAX)
-  {
-	  double rel = REL_MAX / rear_B_rel;
-	  front_A_rel = front_A_rel * rel;
-	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = rear_A_rel * rel;
-	  rear_B_rel = -1 * REL_MAX;
   }
 
   // publish motor speeds
