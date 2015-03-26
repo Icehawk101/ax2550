@@ -25,15 +25,15 @@ const double dist_per_tick = wheel_circumference / encoder_resolution;
 void feCallBack(const ax2550::StampedEncoders::ConstPtr& msg)
 {
   wheel1_new = msg->encoders.left_wheel;
-  wheel4_new = msg->encoders.right_wheel;
+  wheel2_new = msg->encoders.right_wheel;
   dt_front = msg->encoders.time_delta;
 }
 
 //function to save rear encoder data to global variables
 void reCallBack(const ax2550::StampedEncoders::ConstPtr& msg)
 {
-  wheel2_new = msg->encoders.left_wheel;
-  wheel3_new = msg->encoders.right_wheel;
+  wheel3_new = msg->encoders.left_wheel;
+  wheel4_new = msg->encoders.right_wheel;
   dt_rear = msg->encoders.time_delta;
 }
 
@@ -82,8 +82,8 @@ int main(int argc, char** argv)
 
     //compute the overall velocity of the robot
     vx = (wheel_radius/4)*(v_w1+v_w2+v_w3+v_w4);
-    vy = (wheel_radius/4)*(-v_w1+v_w2-v_w3+v_w4);
-    vth = (wheel_radius/(4*k))*(-v_w1-v_w2+v_w3+v_w4);
+    vy = (wheel_radius/4)*(v_w1-v_w2-v_w3+v_w4);
+    vth = (wheel_radius/(4*k))*(-v_w1+v_w2-v_w3+v_w4);
 
     //compute the change in displacement
     double delta_x = vx * avg_dt;
@@ -98,6 +98,7 @@ int main(int argc, char** argv)
     //create quaternion created from yaw
     geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
 
+    /*
     //publish the transform
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = current_time;
@@ -108,6 +109,7 @@ int main(int argc, char** argv)
     odom_trans.transform.translation.z = 0.0;
     odom_trans.transform.rotation = odom_quat;
     odom_broadcaster.sendTransform(odom_trans);
+    */
 
     //publish the odometry
     nav_msgs::Odometry odom;
@@ -121,12 +123,12 @@ int main(int argc, char** argv)
     odom.pose.pose.orientation = odom_quat;
 
     //set the covariance
-    odom.pose.covariance[0] = 0.2;
-    odom.pose.covariance[7] = 0.2;
+    odom.pose.covariance[0] = 1e3; //0.2;
+    odom.pose.covariance[7] = 1e3; //0.2;
     odom.pose.covariance[14] = 1e100;
     odom.pose.covariance[21] = 1e100;
     odom.pose.covariance[28] = 1e100;
-    odom.pose.covariance[35] = 0.2;
+    odom.pose.covariance[35] = 1e3; //0.2;
 
     //set the velocity
     odom.child_frame_id = "base_footprint";
