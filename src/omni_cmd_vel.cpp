@@ -50,9 +50,9 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
   {
     double rel = abs(REL_MAX / front_A_rel);
     front_A_rel = front_A_rel * rel;
-	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = rear_A_rel * rel;
-	  rear_B_rel = rear_B_rel * rel;
+    front_B_rel = front_B_rel * rel;
+    rear_A_rel = rear_A_rel * rel;
+    rear_B_rel = rear_B_rel * rel;
   }
 	
   if(front_B_rel > REL_MAX || front_B_rel < -REL_MAX)
@@ -61,25 +61,25 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
     front_A_rel = front_A_rel * rel;
     front_B_rel = front_B_rel * rel;
     rear_A_rel = rear_A_rel * rel;
-	  rear_B_rel = rear_B_rel * rel;
+    rear_B_rel = rear_B_rel * rel;
   }
 	
   if(rear_A_rel > REL_MAX || rear_A_rel < -REL_MAX)
   {
     double rel = abs(REL_MAX / rear_A_rel);
     front_A_rel = front_A_rel * rel;
-	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = rear_A_rel * rel;
-	  rear_B_rel = rear_B_rel * rel;
+    front_B_rel = front_B_rel * rel;
+    rear_A_rel = rear_A_rel * rel;
+    rear_B_rel = rear_B_rel * rel;
   }
 	
   if(rear_B_rel > REL_MAX || rear_B_rel < -REL_MAX)
   {
-	  double rel = abs(REL_MAX / rear_B_rel);
-	  front_A_rel = front_A_rel * rel;
-	  front_B_rel = front_B_rel * rel;
-	  rear_A_rel = rear_A_rel * rel;
-	  rear_B_rel = rear_B_rel * rel;
+    double rel = abs(REL_MAX / rear_B_rel);
+    front_A_rel = front_A_rel * rel;
+    front_B_rel = front_B_rel * rel;
+    rear_A_rel = rear_A_rel * rel;
+    rear_B_rel = rear_B_rel * rel;
   }
 
   // publish motor speeds
