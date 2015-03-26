@@ -47,30 +47,30 @@ void controlLoop()
   // ROS_INFO("Relative move commands: %f %f", target_speed, target_direction);
   try 
   {
-	  //SAFETY TIME OUT
-	  //if a command is not received for 2 seconds the motors time out
-	  double time_past = (ros::Time::now() - time_last).toSec();
-	  if(time_past > timeout_sec)
-	  {
-		  mc->move(0,0);
-		  ROS_WARN("No velocity commands received - motors timed out");
-	  }
-	  else
-	  {
-		  mc->move(target_speed_right, target_speed_left);
-	  }
+    //SAFETY TIME OUT
+    //if a command is not received for 2 seconds the motors time out
+    double time_past = (ros::Time::now() - time_last).toSec();
+    if(time_past > timeout_sec)
+    {
+      mc->move(0,0);
+      ROS_WARN("No velocity commands received - motors timed out");
+    }
+    else
+    {
+      mc->move(target_speed_right, target_speed_left);
+    }
   } 
   catch(const std::exception &e) 
   {
-  	if (string(e.what()).find("did not receive") != string::npos || string(e.what()).find("failed to receive an echo") != string::npos) 
-	  {
+    if (string(e.what()).find("did not receive") != string::npos || string(e.what()).find("failed to receive an echo") != string::npos) 
+    {
       ROS_WARN("Error commanding the motors: %s", e.what());
-  	} 
-	  else 
-	  {
+    } 
+    else 
+    {
       ROS_ERROR("Error commanding the motors: %s", e.what());
       mc->disconnect();
-  	}
+    }
   }
 }
 
@@ -107,19 +107,19 @@ void queryEncoders()
   {
     mc->queryEncoders(encoder1, encoder2, true);
     if (error_count > 0) 
-	  {
+    {
       error_count -= 1;
     }
   } 
   catch(std::exception &e) 
   {
     if (string(e.what()).find("failed to receive ") != string::npos && error_count != 10) 
-	  {
+    {
       error_count += 1;
       ROS_WARN("Error reading the Encoders: %s", e.what());    
     } 
-	  else 
-	  {
+    else 
+    {
       ROS_ERROR("Error reading the Encoders: %s", e.what());
       mc->disconnect();
     }
@@ -184,15 +184,15 @@ int main(int argc, char **argv)
   {
     ROS_INFO("AX2550 connecting to port %s", port.c_str());
     try 
-	  {
+    {
       mc = new AX2550();
       mc->warn = warnMsgCallback;
       mc->info = infoMsgCallback;
       mc->debug = debugMsgCallback;
       mc->connect(port);
     } 
-	  catch(std::exception &e) 
-	  {
+    catch(std::exception &e) 
+    {
       ROS_ERROR("Failed to connect to the AX2550: %s", e.what());
       if (mc != NULL) 
       {
@@ -201,18 +201,18 @@ int main(int argc, char **argv)
     }
     int count = 0;
     while(mc != NULL && mc->isConnected() && ros::ok()) 
-	  {
+    {
       queryEncoders();
       if (count == 1) 
-	    {
+      {
         controlLoop();
         count = 0;
       } 
-	    else 
-	    {
+      else 
+      {
         count += 1;
       }
-	    encoder_rate.sleep();
+      encoder_rate.sleep();
     }
     if (mc != NULL) 
 	  {
@@ -223,10 +223,10 @@ int main(int argc, char **argv)
       break;
     ROS_INFO("Will try to reconnect to the AX2550 in 5 seconds.");
     for (int i = 0; i < 100; ++i) 
-	  {
-  	  ros::Duration(5.0/100.0).sleep();
-  	  if (!ros::ok())
-  	    break;
+    {
+      ros::Duration(5.0/100.0).sleep();
+      if (!ros::ok())
+        break;
     }
     target_speed_right = 0.0;
     target_speed_left = 0.0;
