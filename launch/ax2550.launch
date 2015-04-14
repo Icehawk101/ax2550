@@ -2,14 +2,16 @@
   <machine name="omnimaxbot" address="omnimaxbot" env-loader="~/catkin_ws/src/omnimaxbot/omnimaxbot_control/ros_env.sh" user="marslab"/>
 
   <node machine="omnimaxbot" pkg="ax2550" type="ax2550_node_front" name="ax2550_front" respawn="true">
-	  <param name="serial_port" type="string" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IKWU-if00-port0"/>
-	  <remap from="cmd_vel" to="/omnimaxbot/front/cmd_vel"/>
+    <param name="serial_port" type="string" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IKWU-if00-port0"/>
+    <remap from="cmd_vel" to="/omnimaxbot/front/cmd_vel"/>
   </node>
 
   <node machine="omnimaxbot" pkg="ax2550" type="ax2550_node_rear" name="ax2550_rear" respawn="true">
-	  <param name="serial_port" type="string" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IMQF-if00-port0"/>
-	  <remap from="cmd_vel" to="/omnimaxbot/rear/cmd_vel"/>
+    <param name="serial_port" type="string" value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IMQF-if00-port0"/>
+    <remap from="cmd_vel" to="/omnimaxbot/rear/cmd_vel"/>
   </node>
 
   <node machine="omnimaxbot" pkg="ax2550" type="omni_cmd_vel" name="omni_cmd_vel" respawn="true"/>
+  
+  <node machine="omnimaxbot" pkg="ax2550" type="omni_odom" name="omni_odom" respawn="true"/>
 </launch>

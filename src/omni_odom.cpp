@@ -114,7 +114,7 @@ int main(int argc, char** argv)
     //publish the odometry
     nav_msgs::Odometry odom;
     odom.header.stamp = current_time;
-    odom.header.frame_id = "odom";
+    odom.header.frame_id = "ax2550_odom";
 
     //set the position
     odom.pose.pose.position.x = x;
