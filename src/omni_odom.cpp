@@ -42,7 +42,7 @@ int main(int argc, char** argv)
   //initialize ROS
   ros::init(argc, argv, "omni_odom");
   ros::NodeHandle n;
-  ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("omni_odom", 60);
+  ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom", 60);
   ros::Subscriber fr_enc = n.subscribe("/omnimaxbot/front/encoders", 100, feCallBack);
   ros::Subscriber rr_enc = n.subscribe("/omnimaxbot/rear/encoders", 100, reCallBack);
   tf::TransformBroadcaster odom_broadcaster;
@@ -134,7 +134,18 @@ int main(int argc, char** argv)
     odom.child_frame_id = "base_footprint";
     odom.twist.twist.linear.x = vx;
     odom.twist.twist.linear.y = vy;
+    odom.twist.twist.linear.z = 0.0;
+    odom.twist.twist.angular.x = 0.0;
+    odom.twist.twist.angular.y = 0.0;
     odom.twist.twist.angular.z = vth;
+    
+    //set the covariance
+    odom.twist.covariance[0] = 1e3; //0.2;
+    odom.twist.covariance[7] = 1e3; //0.2;
+    odom.twist.covariance[14] = 1e100;
+    odom.twist.covariance[21] = 1e100;
+    odom.twist.covariance[28] = 1e100;
+    odom.twist.covariance[35] = 1e3; //0.2;
 
     //publish the message
     odom_pub.publish(odom);

@@ -149,7 +149,7 @@ int main(int argc, char **argv)
   
   // Serial port parameter
   std::string port;
-  n.param("serial_port", port, std::string("/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A501IKWU-if00-port0"));
+  n.param("serial_port", port, std::string("/dev/ttyS0"));
   
   // Wheel diameter parameter
   n.param("wheel_diameter", wheel_diameter, 0.3048);

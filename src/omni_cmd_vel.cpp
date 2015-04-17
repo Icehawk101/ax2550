@@ -26,13 +26,13 @@ void cmd_velCallback(const geometry_msgs::Twist::ConstPtr& msg)
   double Vy = msg->linear.y;
   double Wv = msg->angular.z;
 	
-  // Calculate individual wheel velocities (m/s)
-  double W1 = Vx + Vy + Wv * -k; 
-  double W2 = Vx - Vy + Wv * k;
-  double W3 = Vx - Vy + Wv * -k; 
-  double W4 = Vx + Vy + Wv * k; 
+  // Calculate individual wheel linear velocities (m/s)
+  double W1 = Vx - Vy + Wv * -k; 
+  double W2 = Vx + Vy + Wv * k;
+  double W3 = Vx + Vy + Wv * -k; 
+  double W4 = Vx - Vy + Wv * k; 
 	
-  // Convert from mps to rpm
+  // Convert linear velocities (m/s) to rotational velocities (rpm)
   double front_B_rpm = W1 * (60.0 / (2 * M_PI * wheel_radius));
   double front_A_rpm = W2 * (60.0 / (2 * M_PI * wheel_radius));
   double rear_B_rpm = W3 * (60.0 / (2 * M_PI * wheel_radius));
