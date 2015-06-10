@@ -11,10 +11,6 @@ using std::string;
 AX2550 *mc;
 ros::Publisher encoder_pub;
 
-static double ENCODER_RESOLUTION = 1250*4*20;
-double wheel_circumference = 0.785;
-double wheel_base_length = 0.47;
-double wheel_diameter = 0.25;
 double encoder_poll_rate;
 std::string odom_frame_id;
 size_t error_count;
@@ -24,7 +20,7 @@ double target_speed_left = 0.0;
 double rot_cov = 0.0;
 double pos_cov = 0.0;
 
-const int timeout_sec = 2.0;
+const int timeout_sec = 1.0;
 ros::Time time_last;
 
 // Persistent variables
@@ -151,14 +147,6 @@ int main(int argc, char **argv)
   std::string port;
   n.param("serial_port", port, std::string("/dev/ttyS1")); 
   
-  // Wheel diameter parameter
-  n.param("wheel_diameter", wheel_diameter, 0.3048);
-  
-  wheel_circumference = wheel_diameter * M_PI;
-  
-  // Wheel base length
-  n.param("wheel_base_length", wheel_base_length, 0.9144);
-  
   // Odom Frame id parameter
   n.param("odom_frame_id", odom_frame_id, std::string("rear_odom"));
 
@@ -215,8 +203,8 @@ int main(int argc, char **argv)
       encoder_rate.sleep();
     }
     if (mc != NULL) 
-	  {
-  	  delete mc;
+    {
+      delete mc;
     }
     mc = NULL;
     if(!ros::ok())
